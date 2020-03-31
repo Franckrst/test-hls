@@ -1,18 +1,13 @@
 'use strict';
-
 const { PassThrough } = require('stream');
-
 const { RTCAudioSink, RTCVideoSink } = require('wrtc').nonstandard;
+const ffmpeg = require('fluent-ffmpeg');
+const { StreamInput } = require('fluent-ffmpeg-multistream');
 
-const ffmpeg = require('fluent-ffmpeg')
-const { StreamInput } = require('fluent-ffmpeg-multistream')
+const VIDEO_OUTPUT_SIZE = '854x480';
 
-const VIDEO_OUTPUT_SIZE = '320x240'
-const VIDEO_OUTPUT_FILE = './recording.mp4'
 
-let UID = 0;
-
-function beforeOffer(peerConnection) {
+function beforeOffer(peerConnection,connection) {
   const audioTransceiver = peerConnection.addTransceiver('audio');
   const videoTransceiver = peerConnection.addTransceiver('video');
   const audioSink = new RTCAudioSink(audioTransceiver.receiver.track);
@@ -34,21 +29,26 @@ function beforeOffer(peerConnection) {
       streamVideo = new PassThrough();
       streamAudio = new PassThrough();
 
-      const onAudioData = audioSink.addEventListener('data', (data) => {
-        console.log(data.bitsPerSample, data.sampleRate);
-        streamAudio.push(Buffer.from(data.samples.buffer));
-      });
-      streamAudio.on('data', () => {
+      const onAudioData = ({ samples: { buffer } }) => {
+        streamAudio.push(Buffer.from(buffer));
+      };
+      audioSink.addEventListener('data', onAudioData);
+      streamAudio.on('end', () => {
         audioSink.removeEventListener('data', onAudioData);
       });
 
+      ffmpeg('/path/to/file.avi')
+          .on('codecData', function(data) {
+            console.log('Input is ' + data.audio + ' audio ' +
+                'with ' + data.video + ' video');
+          });
       const proc = ffmpeg()
           .addInput((new StreamInput(streamVideo)).url)
           .addInputOptions([
             '-f', 'rawvideo',
             '-pix_fmt', 'yuv420p',
             '-s', size,
-            '-r', '30',
+            '-r', '25',
           ])
           .addInput((new StreamInput(streamAudio)).url)
           .addInputOptions([
@@ -63,8 +63,9 @@ function beforeOffer(peerConnection) {
             console.log('Stop recording >> ', size)
           })
           .size(VIDEO_OUTPUT_SIZE)
+          .outputOptions('-preset superfast')
           .outputFormat('flv')
-          .output('rtmp://localhost:1935/stream/hello');
+          .output(`rtmp://localhost:1935/stream/${connection.user}?key=${connection.key}`);
 
       proc.run();
 

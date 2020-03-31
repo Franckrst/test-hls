@@ -40,9 +40,9 @@ class ConnectionManager {
       connections.delete(connection.id);
     }
 
-    this.createConnection = () => {
+    this.createConnection = (key,user) => {
       const id = createId();
-      const connection = new Connection(id);
+      const connection = new Connection(id,key,user);
 
       // 1. Add the "closed" listener.
       function closedListener() { deleteConnection(connection); }

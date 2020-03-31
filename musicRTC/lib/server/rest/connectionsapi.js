@@ -6,8 +6,10 @@ function mount(app, connectionManager, prefix = '') {
   });
 
   app.post(`${prefix}/connections`, async (req, res) => {
+    console.log(req.user);
     try {
-      const connection = await connectionManager.createConnection();
+      const connection = await connectionManager.createConnection(req.headers['x-key'],req.user.id);
+      console.log("===>",req.headers);
       res.send(connection);
     } catch (error) {
       console.error(error);

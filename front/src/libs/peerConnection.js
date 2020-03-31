@@ -1,9 +1,11 @@
-class ConnectionClient {
+class  ConnectionClient {
     constructor(options = {}) {
         options = {
             clearTimeout,
             host: '',
             prefix: '.',
+            token: '',
+            key: '',
             setTimeout,
             timeToHostCandidates: 3000,
             ...options
@@ -11,7 +13,9 @@ class ConnectionClient {
 
         const {
             prefix,
-            host
+            host,
+            token,
+            key
         } = options;
 
         this.createConnection = async (options = {}) => {
@@ -27,7 +31,11 @@ class ConnectionClient {
             } = options;
 
             const response1 = await fetch(`${host}${prefix}/connections`, {
-                method: 'POST'
+                method: 'POST',
+                headers : {
+                    'Authorization': `Bearer ${token}`,
+                    'X-key' : key
+                }
             });
 
             const remotePeerConnection = await response1.json();
@@ -41,7 +49,10 @@ class ConnectionClient {
             // RTCPeerConnection is closed. In the future, we can subscribe to
             // "connectionstatechange" events.
             localPeerConnection.close = function() {
-                fetch(`${host}${prefix}/connections/${id}`, { method: 'delete' }).catch(() => {});
+                fetch(`${host}${prefix}/connections/${id}`, { method: 'delete',
+                    headers : {
+                        'Authorization': `Bearer ${token}`
+                    } }).catch(() => {});
                 return RTCPeerConnection.prototype.close.apply(this, arguments);
             };
 
@@ -60,6 +71,7 @@ class ConnectionClient {
                 method: 'POST',
                 body: JSON.stringify(localPeerConnection.localDescription),
                 headers: {
+                    'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 }
             });

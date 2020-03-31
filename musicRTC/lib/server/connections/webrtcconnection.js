@@ -9,8 +9,8 @@ const TIME_TO_HOST_CANDIDATES = 3000;  // NOTE(mroberts): Too long.
 const TIME_TO_RECONNECTED = 10000;
 
 class WebRtcConnection extends Connection {
-  constructor(id, options = {}) {
-    super(id);
+  constructor(id, key, user, options = {}) {
+    super(id, key, user);
 
     options = {
       RTCPeerConnection: DefaultRTCPeerConnection,
@@ -34,7 +34,7 @@ class WebRtcConnection extends Connection {
       sdpSemantics: 'unified-plan'
     });
 
-    beforeOffer(peerConnection);
+    beforeOffer(peerConnection, this);
 
     let connectionTimer = options.setTimeout(() => {
       if (peerConnection.iceConnectionState !== 'connected'

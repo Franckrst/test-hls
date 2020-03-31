@@ -19,11 +19,13 @@
   "license": "BSD-3-Clause",
   "dependencies": {
     "Scope": "github:kevincennis/Scope",
+    "axios": "^0.19.2",
     "body-parser": "^1.18.3",
     "browserify-middleware": "^8.1.1",
     "canvas": "^2.4.1",
     "color-space": "^1.16.0",
     "express": "^4.16.4",
+    "express-jwt": "^5.3.1",
     "fluent-ffmpeg": "^2.1.2",
     "fluent-ffmpeg-multistream": "^1.0.0",
     "node-fetch": "^2.3.0",

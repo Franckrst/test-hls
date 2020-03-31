@@ -12,9 +12,11 @@ class WebRtcConnectionManager {
 
     const connectionManager = new ConnectionManager(options);
 
-    this.createConnection = async () => {
-      const connection = connectionManager.createConnection();
+    this.createConnection = async (key,user) => {
+      const connection = connectionManager.createConnection(key,user);
+      console.log("===8==>");
       await connection.doOffer();
+      console.log("===9==>");
       return connection;
     };
 
@@ -34,8 +36,8 @@ class WebRtcConnectionManager {
 
 WebRtcConnectionManager.create = function create(options) {
   return new WebRtcConnectionManager({
-    Connection: function(id) {
-      return new WebRtcConnection(id, options);
+    Connection: function(id,key, user) {
+      return new WebRtcConnection(id,key, user, options);
     }
   });
 };
